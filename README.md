@@ -64,8 +64,13 @@ bash build.sh
 bash clean.sh
 ```
 **Run**
+- Without Logs
 ```bash
 ./rv32umos programs/<your_file.elf>
+```
+- With Logs
+```bash
+./rv32umos programs/<your_file.elf> -logs
 ```
 
 ## Example Output(Log)

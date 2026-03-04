@@ -1,6 +1,12 @@
 /* linker.ld */
 ENTRY(_start)
 
+MEMORY
+{
+    /* Enforce exactly 16 MB for the ELF sections starting at 0x0 */
+    EXEC_RAM (rwx) : ORIGIN = 0x00000000, LENGTH = 16M
+}
+
 /* Define segments with specific permissions */
 /* FLAGS: 4=Read, 2=Write, 1=Exec */
 PHDRS
@@ -18,26 +24,28 @@ SECTIONS
     .text : {
         *(.text)        
         *(.text.*)
-    } :text
+    } > EXEC_RAM :text
 
     .rodata : {
         *(.rodata)
         *(.rodata.*)
-    } :text
-
-    /* Align to next 4KB Page Boundary */
-    /* This ensures Data starts on a new page, separate from Code */
-    . = ALIGN(0x1000);
+        *(.srodata)    
+        *(.srodata.*)
+    } > EXEC_RAM :text
 
     /* DATA SEGMENT */
-    .data : {
+    .data : ALIGN(0x1000){
         *(.data)
         *(.data.*)
-    } :data
+        *(.sdata)      
+        *(.sdata.*)
+    } > EXEC_RAM :data
 
-    .bss : {
+    .bss : ALIGN(0x1000) {
         *(.bss)
         *(.bss.*)
+        *(.sbss)     
+        *(.sbss.*)
         *(COMMON)
-    } :data
+    } > EXEC_RAM :data
 }

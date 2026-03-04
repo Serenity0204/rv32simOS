@@ -52,11 +52,12 @@ int main(int argc, char* argv[])
 {
     if (argc < 2)
     {
-        std::cout << "Usage: ./rv32simOS <elf_file>\n";
+        std::cout << "Usage: ./rv32simOS <elf_file> -<log flag>\n";
         return 1;
     }
 
     std::string filename = std::string(argv[1]);
+    bool printLogs = argc == 3 && std::string(argv[2]) == "-log" ? true : false;
 
     Kernel kernel;
 
@@ -72,7 +73,7 @@ int main(int argc, char* argv[])
     while (kernel.isRunning())
         kernel.step();
 
-    SHOW_LOGS();
+    if (printLogs) SHOW_LOGS();
 
     STATS.printSummary();
     return 0;
