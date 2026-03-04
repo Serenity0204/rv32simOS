@@ -23,6 +23,7 @@ The system operates on a Sequential execution model with Interrupt Polling. This
   - **Virtual Memory**: Per-process isolation using page tables.
   - **Lazy Loading**: Code and data segments are demand-paged directly from the ELF executable, and stack memory grows dynamically.
   - **Protection**: Enforces Read/Write/Execute permissions defined in the ELF headers.
+  - **Userspace Memory Allocation(Malloc/Free)**: Implemented the heap memory allocator for userspace by utilizing the custom sbrk syscall.
 - **Storage & File System**
   - **Virtual File System (VFS)**: An abstract layer routing file operations to their respective handlers
   - **In-Memory Disk**: Simulates a block device with 4KB sectors.
@@ -42,6 +43,7 @@ The system operates on a Sequential execution model with Interrupt Polling. This
   - `SYS_OPEN`: open a file, return the file descriptor id.
   - `SYS_CLOSE`: close the file.
   - `SYS_CREATE`: create a file.
+  - `SYS_SBRK`: expand or shrink the heap
   
 ## [Detailed Wiki](https://deepwiki.com/Serenity0204/rv32sysemu)
 
@@ -111,11 +113,11 @@ Physical Frames Used     :          4
 ```
 
 ## Todo
-- [ ] Multi-Threading
+- [X] Multi-Threading
 - [ ] Synchronization
 - [ ] Advanced Paging(Copy-on-Write and Shared Memory)
-- [ ] Swap and Page Eviction
-- [ ] Virtual Disk
+- [X] Swap and Page Eviction
+- [X] Virtual Disk
 - [ ] More Syscalls
 - [ ] Filesystem
 - [ ] Configurable Scheduling/Swap Policies
