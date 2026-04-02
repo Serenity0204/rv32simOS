@@ -1,5 +1,5 @@
 #pragma once
-#include "Types.hpp"
+#include "Common.hpp"
 #include <elf.h>
 #include <unordered_map>
 

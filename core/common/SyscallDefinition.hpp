@@ -23,6 +23,8 @@ enum class SyscallID : int
     SYS_CLOSE = 10,
     SYS_CREATE = 11,
     SYS_SBRK = 12,
+    SYS_CREATE_PROCESS = 13,
+    SYS_JOIN_PROCESS = 14,
     SYS_UNKNOWN = -1,
 };
 
@@ -40,4 +42,6 @@ inline const std::unordered_map<SyscallID, std::string> sysCallNameMap = {
     {SyscallID::SYS_CLOSE, "close syscall"},
     {SyscallID::SYS_CREATE, "create syscall"},
     {SyscallID::SYS_SBRK, "sbrk syscall"},
+    {SyscallID::SYS_CREATE_PROCESS, "create process syscall"},
+    {SyscallID::SYS_JOIN_PROCESS, "join process syscall"},
 };

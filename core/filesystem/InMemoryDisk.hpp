@@ -1,6 +1,6 @@
 #pragma once
+#include "Common.hpp"
 #include "DiskInterface.hpp"
-#include "Types.hpp"
 #include <vector>
 
 class InMemoryDisk : public DiskInterface

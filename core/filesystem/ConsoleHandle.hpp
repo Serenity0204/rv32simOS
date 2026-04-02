@@ -1,6 +1,6 @@
 #pragma once
+#include "Common.hpp"
 #include "FileHandleInterface.hpp"
-#include "Types.hpp"
 #include <vector>
 
 class ConsoleHandle : public FileHandleInterface

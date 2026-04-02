@@ -1,6 +1,6 @@
 #pragma once
+#include "Common.hpp"
 #include "SyscallDefinition.hpp"
-#include "Types.hpp"
 #include <exception>
 #include <string>
 

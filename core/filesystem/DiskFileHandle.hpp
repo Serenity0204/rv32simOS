@@ -1,7 +1,7 @@
 #pragma once
+#include "Common.hpp"
 #include "DiskInterface.hpp"
 #include "FileHandleInterface.hpp"
-#include "Types.hpp"
 #include <vector>
 
 class DiskFileHandle : public FileHandleInterface

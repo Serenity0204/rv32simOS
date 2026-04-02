@@ -1,7 +1,12 @@
 #pragma once
-#include "Types.hpp"
 #include <cstdint>
 #include <iostream>
+
+// riscv32
+using Byte = uint8_t;
+using Half = uint16_t;
+using Word = uint32_t;
+using Addr = uint32_t;
 
 // Max process
 const int MAX_PROCESS = 8;
@@ -61,3 +66,11 @@ const std::size_t FD_TABLE_SIZE = 1024;
 
 // max file name length
 const std::size_t MAX_FILE_NAME_LENGTH = 128;
+
+// FD
+enum FileDescriptor : int
+{
+    STDIN = 0,
+    STDOUT = 1,
+    STDERR = 2
+};
