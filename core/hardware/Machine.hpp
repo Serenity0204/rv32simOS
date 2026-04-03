@@ -7,12 +7,12 @@
 class Bus;
 class Executor;
 
-class CPU
+class Machine
 {
 public:
     friend class Executor;
-    CPU();
-    ~CPU() = default;
+    Machine();
+    ~Machine() = default;
 
     void step();
     void reset();

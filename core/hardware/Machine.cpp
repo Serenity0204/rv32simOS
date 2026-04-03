@@ -1,16 +1,16 @@
-#include "CPU.hpp"
 #include "Bus.hpp"
 #include "Decoder.hpp"
 #include "Exception.hpp"
 #include "Executor.hpp"
+#include "Machine.hpp"
 #include "Utils.hpp"
 
-CPU::CPU()
+Machine::Machine()
 {
     this->reset();
 }
 
-void CPU::reset()
+void Machine::reset()
 {
     this->mmu.reset();
     this->halted = false;
@@ -19,12 +19,12 @@ void CPU::reset()
     this->regs.write(2, STACK_TOP);
 }
 
-Word CPU::fetch()
+Word Machine::fetch()
 {
     return this->mmu.fetch(this->pc);
 }
 
-void CPU::execute(Word instr)
+void Machine::execute(Word instr)
 {
 
     Opcode op = Decoder::opcode(instr);
@@ -317,13 +317,13 @@ void CPU::execute(Word instr)
     }
 }
 
-void CPU::step()
+void Machine::step()
 {
     Word instr = this->fetch();
     this->execute(instr);
 }
 
-void CPU::dumpRegisters()
+void Machine::dumpRegisters()
 {
     std::cout << "PC: 0x" << std::hex << this->pc << "\n";
     for (int i = 0; i < 32; ++i)

@@ -1,8 +1,8 @@
 #pragma once
-#include "CPU.hpp"
 #include "DiskInterface.hpp"
 #include "HardwareTimer.hpp"
 #include "InMemoryDisk.hpp"
+#include "Machine.hpp"
 #include "PageReplacementPolicy.hpp"
 #include "PhysicalMemoryManager.hpp"
 #include "Process.hpp"
@@ -20,7 +20,7 @@ class Kernel;
 struct SystemContext
 {
 public:
-    CPU cpu;
+    Machine cpu;
     PhysicalMemoryManager pmm;
 
     // Maps PID -> Exit Code

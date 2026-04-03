@@ -1,20 +1,20 @@
 #include "Executor.hpp"
 #include "Bus.hpp"
-#include "CPU.hpp"
+#include "Machine.hpp"
 #include "Decoder.hpp"
 #include "Exception.hpp"
 #include "Utils.hpp"
 #include <limits>
 
 // Immediates
-void Executor::execLUI(CPU& cpu, Word instr)
+void Executor::execLUI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
     Word imm = Decoder::immU(instr);
     cpu.regs.write(rd, imm);
 }
-void Executor::execAUIPC(CPU& cpu, Word instr)
+void Executor::execAUIPC(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -24,7 +24,7 @@ void Executor::execAUIPC(CPU& cpu, Word instr)
 }
 
 // I Type
-void Executor::execADDI(CPU& cpu, Word instr)
+void Executor::execADDI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -35,7 +35,7 @@ void Executor::execADDI(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSLTI(CPU& cpu, Word instr)
+void Executor::execSLTI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -49,7 +49,7 @@ void Executor::execSLTI(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSLTIU(CPU& cpu, Word instr)
+void Executor::execSLTIU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -62,7 +62,7 @@ void Executor::execSLTIU(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execXORI(CPU& cpu, Word instr)
+void Executor::execXORI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -73,7 +73,7 @@ void Executor::execXORI(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execORI(CPU& cpu, Word instr)
+void Executor::execORI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -84,7 +84,7 @@ void Executor::execORI(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execANDI(CPU& cpu, Word instr)
+void Executor::execANDI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -94,7 +94,7 @@ void Executor::execANDI(CPU& cpu, Word instr)
     Word result = val1 & imm;
     cpu.regs.write(rd, result);
 }
-void Executor::execSLLI(CPU& cpu, Word instr)
+void Executor::execSLLI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -105,7 +105,7 @@ void Executor::execSLLI(CPU& cpu, Word instr)
     Word result = val1 << shamt;
     cpu.regs.write(rd, result);
 }
-void Executor::execSRLI(CPU& cpu, Word instr)
+void Executor::execSRLI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -116,7 +116,7 @@ void Executor::execSRLI(CPU& cpu, Word instr)
     Word result = val1 >> shamt;
     cpu.regs.write(rd, result);
 }
-void Executor::execSRAI(CPU& cpu, Word instr)
+void Executor::execSRAI(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -130,7 +130,7 @@ void Executor::execSRAI(CPU& cpu, Word instr)
 }
 
 // R type
-void Executor::execADD(CPU& cpu, Word instr)
+void Executor::execADD(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -142,7 +142,7 @@ void Executor::execADD(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSUB(CPU& cpu, Word instr)
+void Executor::execSUB(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -154,7 +154,7 @@ void Executor::execSUB(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSLL(CPU& cpu, Word instr)
+void Executor::execSLL(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -169,7 +169,7 @@ void Executor::execSLL(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSLT(CPU& cpu, Word instr)
+void Executor::execSLT(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -184,7 +184,7 @@ void Executor::execSLT(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSLTU(CPU& cpu, Word instr)
+void Executor::execSLTU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -198,7 +198,7 @@ void Executor::execSLTU(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execXOR(CPU& cpu, Word instr)
+void Executor::execXOR(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -209,7 +209,7 @@ void Executor::execXOR(CPU& cpu, Word instr)
     Word result = val1 ^ val2;
     cpu.regs.write(rd, result);
 }
-void Executor::execSRL(CPU& cpu, Word instr)
+void Executor::execSRL(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -222,7 +222,7 @@ void Executor::execSRL(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execSRA(CPU& cpu, Word instr)
+void Executor::execSRA(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -236,7 +236,7 @@ void Executor::execSRA(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execOR(CPU& cpu, Word instr)
+void Executor::execOR(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -247,7 +247,7 @@ void Executor::execOR(CPU& cpu, Word instr)
     Word result = val1 | val2;
     cpu.regs.write(rd, result);
 }
-void Executor::execAND(CPU& cpu, Word instr)
+void Executor::execAND(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -272,7 +272,7 @@ void Executor::execAND(CPU& cpu, Word instr)
 // void Executor::execCSRRCI(CPU& cpu, Word instr) {}
 
 // // --- System ---
-void Executor::execECALL(CPU& cpu)
+void Executor::execECALL(Machine& cpu)
 {
     SyscallID syscallID = static_cast<SyscallID>(cpu.regs[17]);
     bool exist = sysCallNameMap.count(syscallID) > 0;
@@ -291,7 +291,7 @@ void Executor::execECALL(CPU& cpu)
 // void Executor::execSFENCEVMA(CPU& cpu, Word instr) {}
 
 // Load
-void Executor::execLB(CPU& cpu, Word instr)
+void Executor::execLB(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -304,7 +304,7 @@ void Executor::execLB(CPU& cpu, Word instr)
     int32_t signedVal = static_cast<int32_t>(static_cast<int8_t>(val));
     cpu.regs.write(rd, signedVal);
 }
-void Executor::execLH(CPU& cpu, Word instr)
+void Executor::execLH(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -317,7 +317,7 @@ void Executor::execLH(CPU& cpu, Word instr)
     cpu.regs.write(rd, signedVal);
 }
 
-void Executor::execLW(CPU& cpu, Word instr)
+void Executor::execLW(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -328,7 +328,7 @@ void Executor::execLW(CPU& cpu, Word instr)
     Word val = cpu.loadVirtualMemory(addr, 4);
     cpu.regs.write(rd, val);
 }
-void Executor::execLBU(CPU& cpu, Word instr)
+void Executor::execLBU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -339,7 +339,7 @@ void Executor::execLBU(CPU& cpu, Word instr)
     Word val = cpu.loadVirtualMemory(addr, 1);
     cpu.regs.write(rd, val & 0xFF);
 }
-void Executor::execLHU(CPU& cpu, Word instr)
+void Executor::execLHU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -352,7 +352,7 @@ void Executor::execLHU(CPU& cpu, Word instr)
 }
 
 // Store
-void Executor::execSB(CPU& cpu, Word instr)
+void Executor::execSB(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -362,7 +362,7 @@ void Executor::execSB(CPU& cpu, Word instr)
     Word val = cpu.regs[rs2];
     cpu.storeVirtualMemory(addr, 1, val);
 }
-void Executor::execSH(CPU& cpu, Word instr)
+void Executor::execSH(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -372,7 +372,7 @@ void Executor::execSH(CPU& cpu, Word instr)
     Word val = cpu.regs[rs2];
     cpu.storeVirtualMemory(addr, 2, val);
 }
-void Executor::execSW(CPU& cpu, Word instr)
+void Executor::execSW(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -384,7 +384,7 @@ void Executor::execSW(CPU& cpu, Word instr)
 }
 
 // Jump
-void Executor::execJAL(CPU& cpu, Word instr)
+void Executor::execJAL(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     Word imm = Decoder::immJ(instr);
@@ -398,7 +398,7 @@ void Executor::execJAL(CPU& cpu, Word instr)
     cpu.pc = nextPC;
 }
 
-void Executor::execJALR(CPU& cpu, Word instr)
+void Executor::execJALR(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     Word rs1 = Decoder::rs1(instr);
@@ -414,7 +414,7 @@ void Executor::execJALR(CPU& cpu, Word instr)
 }
 
 // Branch
-void Executor::execBEQ(CPU& cpu, Word instr)
+void Executor::execBEQ(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -429,7 +429,7 @@ void Executor::execBEQ(CPU& cpu, Word instr)
         cpu.pc = nextPC;
     }
 }
-void Executor::execBNE(CPU& cpu, Word instr)
+void Executor::execBNE(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -444,7 +444,7 @@ void Executor::execBNE(CPU& cpu, Word instr)
         cpu.pc = nextPC;
     }
 }
-void Executor::execBLT(CPU& cpu, Word instr)
+void Executor::execBLT(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -460,7 +460,7 @@ void Executor::execBLT(CPU& cpu, Word instr)
         cpu.pc = nextPC;
     }
 }
-void Executor::execBGE(CPU& cpu, Word instr)
+void Executor::execBGE(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -476,7 +476,7 @@ void Executor::execBGE(CPU& cpu, Word instr)
         cpu.pc = nextPC;
     }
 }
-void Executor::execBLTU(CPU& cpu, Word instr)
+void Executor::execBLTU(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -491,7 +491,7 @@ void Executor::execBLTU(CPU& cpu, Word instr)
         cpu.pc = nextPC;
     }
 }
-void Executor::execBGEU(CPU& cpu, Word instr)
+void Executor::execBGEU(Machine& cpu, Word instr)
 {
     Word rs1 = Decoder::rs1(instr);
     Word rs2 = Decoder::rs2(instr);
@@ -508,7 +508,7 @@ void Executor::execBGEU(CPU& cpu, Word instr)
 }
 
 // M Extension
-void Executor::execMUL(CPU& cpu, Word instr)
+void Executor::execMUL(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -519,7 +519,7 @@ void Executor::execMUL(CPU& cpu, Word instr)
     cpu.regs.write(rd, result);
 }
 
-void Executor::execMULH(CPU& cpu, Word instr)
+void Executor::execMULH(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -533,7 +533,7 @@ void Executor::execMULH(CPU& cpu, Word instr)
     cpu.regs.write(rd, static_cast<Word>(result >> 32));
 }
 
-void Executor::execMULHSU(CPU& cpu, Word instr)
+void Executor::execMULHSU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -547,7 +547,7 @@ void Executor::execMULHSU(CPU& cpu, Word instr)
     cpu.regs.write(rd, static_cast<Word>(result >> 32));
 }
 
-void Executor::execMULHU(CPU& cpu, Word instr)
+void Executor::execMULHU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -561,7 +561,7 @@ void Executor::execMULHU(CPU& cpu, Word instr)
     cpu.regs.write(rd, static_cast<Word>(result >> 32));
 }
 
-void Executor::execDIV(CPU& cpu, Word instr)
+void Executor::execDIV(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -588,7 +588,7 @@ void Executor::execDIV(CPU& cpu, Word instr)
     cpu.regs.write(rd, static_cast<Word>(dividend / divisor));
 }
 
-void Executor::execDIVU(CPU& cpu, Word instr)
+void Executor::execDIVU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -608,7 +608,7 @@ void Executor::execDIVU(CPU& cpu, Word instr)
     cpu.regs.write(rd, dividend / divisor);
 }
 
-void Executor::execREM(CPU& cpu, Word instr)
+void Executor::execREM(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
@@ -635,7 +635,7 @@ void Executor::execREM(CPU& cpu, Word instr)
     cpu.regs.write(rd, static_cast<Word>(dividend % divisor));
 }
 
-void Executor::execREMU(CPU& cpu, Word instr)
+void Executor::execREMU(Machine& cpu, Word instr)
 {
     Word rd = Decoder::rd(instr);
     if (rd == 0) return;
