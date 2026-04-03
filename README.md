@@ -67,7 +67,7 @@ The project follows a flat, modular directory structure:
   - `SYS_JOIN_PROCESS`: Block parent and wait for child termination.
 
   
-## [Detailed Wiki](https://deepwiki.com/Serenity0204/rv32sysemu)
+## [Detailed Wiki](https://deepwiki.com/Serenity0204/rv32umos)
 
 ## Toolchain Requirements
 1. Install the riscv toolchain
