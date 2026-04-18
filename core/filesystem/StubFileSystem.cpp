@@ -11,7 +11,6 @@ StubFileSystem::StubFileSystem(DiskInterface* disk) : disk(disk), freeBlockPoint
 FileHandleInterface* StubFileSystem::openImpl(const std::string& filename)
 {
     if (!this->fileTable.count(filename)) return nullptr;
-    kernel.scheduler->sleepCurrentThread(5, "VFS Open");
 
     FileMetadata meta = this->fileTable.at(filename);
     return new DiskFileHandle(this->disk, meta.startBlock, meta.sizeBytes);
