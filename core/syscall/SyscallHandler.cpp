@@ -2,6 +2,7 @@
 #include "Common.hpp"
 #include "Kernel.hpp"
 #include "KernelInstance.hpp"
+#include "KernelPanic.hpp"
 #include "Logger.hpp"
 #include "Stats.hpp"
 #include "Utils.hpp"
@@ -62,8 +63,7 @@ SyscallStatus SyscallHandler::dispatch(SyscallID id)
         this->handleJoinProcess(status);
         break;
     default:
-        LOG(SYSCALL, ERROR, "Unimplemented syscall id: " + std::to_string((int)id));
-        kernel.systemCtx->cpu.halt();
+        PANIC("Unimplemented syscall id: " + std::to_string((int)id));
         break;
     }
 
@@ -149,29 +149,25 @@ void SyscallHandler::handleThreadExit(SyscallStatus& status)
     Word exitCode = kernel.systemCtx->cpu.readReg(10);
     Thread* current = kernel.systemCtx->getCurrentThread();
 
-    if (current != nullptr)
-    {
-        current->setState(ThreadState::TERMINATED);
-        current->setExitCode(exitCode);
-        Process* proc = current->getProcess();
-        LOG(KERNEL, INFO, "Thread " + std::to_string(current->getTid()) + " (PID " + std::to_string(proc->getPid()) + ")" + " exited code " + std::to_string(exitCode));
+    current->setState(ThreadState::TERMINATED);
+    current->setExitCode(exitCode);
+    Process* proc = current->getProcess();
+    LOG(KERNEL, INFO, "Thread " + std::to_string(current->getTid()) + " (PID " + std::to_string(proc->getPid()) + ")" + " exited code " + std::to_string(exitCode));
 
-        // check for joiner
-        Thread* joiner = current->getJoiner();
-        if (joiner != nullptr)
-        {
-            joiner->setState(ThreadState::READY);
-            // pass the exit code to joiner for their ecall
-            joiner->getRegs().write(10, exitCode);
-            // advance joiner PC
-            joiner->setPC(joiner->getPC() + 4);
-            LOG(SYSCALL, INFO, "Thread " + std::to_string(current->getTid()) + " waking up Joiner " + std::to_string(joiner->getTid()));
-        }
-        // Signal to schedule
-        status.needReschedule = true;
-        return;
+    // check for joiner
+    Thread* joiner = current->getJoiner();
+    if (joiner != nullptr)
+    {
+        joiner->setState(ThreadState::READY);
+        // pass the exit code to joiner for their ecall
+        joiner->getRegs().write(10, exitCode);
+        // advance joiner PC
+        joiner->setPC(joiner->getPC() + 4);
+        LOG(SYSCALL, INFO, "Thread " + std::to_string(current->getTid()) + " waking up Joiner " + std::to_string(joiner->getTid()));
     }
-    kernel.systemCtx->cpu.halt();
+    // Signal to schedule
+    status.needReschedule = true;
+    return;
 }
 
 void SyscallHandler::handleThreadCreate(SyscallStatus& status)
@@ -184,7 +180,6 @@ void SyscallHandler::handleThreadCreate(SyscallStatus& status)
     Word arg = kernel.systemCtx->cpu.readReg(11);
 
     Thread* current = kernel.systemCtx->getCurrentThread();
-    if (current == nullptr) return;
 
     Process* proc = current->getProcess();
     Thread* newThread = proc->createThread(funcPtr, arg);
@@ -213,7 +208,6 @@ void SyscallHandler::handleWrite(SyscallStatus& status)
     status.error = false;
 
     Thread* currentThread = kernel.systemCtx->getCurrentThread();
-    if (currentThread == nullptr) return;
 
     Process* current = currentThread->getProcess();
     LOG(SYSCALL, DEBUG, "Write called by PID " + std::to_string(current->getPid()));
@@ -255,8 +249,6 @@ void SyscallHandler::handleRead(SyscallStatus& status)
     status.error = false;
 
     Thread* currentThread = kernel.systemCtx->getCurrentThread();
-    if (currentThread == nullptr) return;
-
     Process* current = currentThread->getProcess();
 
     LOG(SYSCALL, DEBUG, "Read called by PID " + std::to_string(current->getPid()));
@@ -301,8 +293,6 @@ void SyscallHandler::handleOpen(SyscallStatus& status)
 
     Word pathAddr = kernel.systemCtx->cpu.readReg(10);
     Thread* currentThread = kernel.systemCtx->getCurrentThread();
-    if (currentThread == nullptr) return;
-
     std::string filename;
     // read virtual memory string
     std::size_t offset = 0;
@@ -362,8 +352,6 @@ void SyscallHandler::handleCreate(SyscallStatus& status)
     Word pathAddr = kernel.systemCtx->cpu.readReg(10);
     Word size = kernel.systemCtx->cpu.readReg(11);
     Thread* currentThread = kernel.systemCtx->getCurrentThread();
-    if (currentThread == nullptr) return;
-
     std::string filename;
     // read virtual memory string
     std::size_t offset = 0;
@@ -518,6 +506,7 @@ void SyscallHandler::handleCreateProcess(SyscallStatus& status)
     int createdPid = kernel.loader->loadELF(filename);
     if (createdPid == -1)
     {
+        LOG(SYSCALL, ERROR, "Create process failed for file: " + filename);
         kernel.systemCtx->cpu.writeReg(10, -1);
         kernel.systemCtx->cpu.advancePC();
         return;
@@ -577,20 +566,13 @@ void SyscallHandler::handleExit(SyscallStatus& status)
     Word exitCode = kernel.systemCtx->cpu.readReg(10);
     Thread* current = kernel.systemCtx->getCurrentThread();
 
-    if (current == nullptr)
-    {
-        kernel.systemCtx->cpu.halt();
-        return;
-    }
-
     Process* proc = current->getProcess();
     int currentPid = proc->getPid();
 
     bool ok = Process::terminate(currentPid, static_cast<int>(exitCode), false);
     if (!ok)
     {
-        LOG(KERNEL, ERROR, "KERNEL PANIC: Failed to terminate process " + std::to_string(currentPid));
-        kernel.systemCtx->cpu.halt();
+        PANIC("KERNEL PANIC: Failed to terminate process " + std::to_string(currentPid));
         return;
     }
     status.needReschedule = true;

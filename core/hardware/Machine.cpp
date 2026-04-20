@@ -13,7 +13,6 @@ Machine::Machine()
 void Machine::reset()
 {
     this->mmu.reset();
-    this->halted = false;
     this->pc = MEMORY_BASE;
     this->regs.reset();
     this->regs.write(2, STACK_TOP);

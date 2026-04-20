@@ -10,12 +10,15 @@
 
 class Kernel
 {
+private:
+    void initInternal();
+    void destroyInternal();
+
 public:
     Kernel();
     ~Kernel();
     void init();
-    bool isRunning();
-
+    void reset();
     bool createProcess(const std::string& filename);
     bool killProcess(int pid);
 

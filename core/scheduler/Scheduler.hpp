@@ -10,10 +10,10 @@ public:
     void preempt();
     inline bool getIsIdling() const { return this->isIdling; }
     void sleepCurrentThread(int delayMs, const std::string& reason);
+    bool checkAllTerminated();
 
 private:
     void contextSwitch(std::size_t nextIndex);
-    bool checkAllTerminated();
     bool checkCurrentThreadRunnable();
     bool isIdling = false;
 };

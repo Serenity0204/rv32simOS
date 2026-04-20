@@ -10,7 +10,7 @@ The system employs a **Sequential Execution Model with Signal-Driven Interrupt P
 - **User Space**: Runs unmodified RISC-V ELF binaries. Instructions are fetched, decoded, and executed by the emulated CPU.
 - **Kernel Space (Host)**: The OS logic (Scheduler, VMM, VFS, Syscalls) runs as native C++ code.
 - **Preemption & POSIX Timer**: 
-    - **Context Switching**:  The simulator utilizes the **POSIX timer** to trigger hardware interrupts at a configurable frequency. When a timer signal is detected, it goes into the **Timer Interrupt Handler** and trigger context switching via host level `swapcontext` and kernel RISCV context switching.
+    - **Context Switching**:  The simulator utilizes the **POSIX timer** to trigger hardware interrupts at a configurable frequency. When a timer signal is detected, it goes into the **Timer Interrupt Handler** and trigger context switching via host level `context_switch`assembly inside `Switch.S` and kernel RISCV context switching.
     - **Interrupt Handling**: To ensure kernel-mode atomicity and prevent race conditions within the simulator, interrupt can be turned on and off to ensure that critical sections are protected.
 
 ## Project Structure
@@ -31,7 +31,7 @@ The project follows a flat, modular directory structure:
 ## Features
 - **Emulated Hardware**
   - **RV32IM ISA**: Full support for base integer instructions + M-extension (Multiplication/Division).
-  - **Cost Modeling**: Simulates hardware latency by charging "Time Costs" for instructions and I/O events.
+  - **Cost Modeling**: Simulates hardware latency by charging "Time Costs" for disk, file, and memory I/O.
 - **Preemptive Multitasking**
   - **POSIX Driven**: Real-time preemption using host signals to simulate hardware timer ticks.
   - **Multi-Threading**: Native support for kernel-managed threads. Processes can spawn multiple threads that share the same page table.
@@ -87,14 +87,17 @@ bash build.sh
 ```bash
 bash clean.sh
 ```
+**Adding custom C code**
+add your file under `programs/`, name it `test<test number>.c`
+
 **Run**
 - Without Logs
 ```bash
-./rv32umos programs/<your_file.elf>
+./rv32umos programs/<your_file1.elf> programs/<your_file2.elf> ...
 ```
 - With Logs
 ```bash
-./rv32umos programs/<your_file.elf> -logs
+./rv32umos programs/<your_file1.elf> programs/<your_file2.elf> ... -logs
 ```
 
 ## Example Output(Log)

@@ -2,6 +2,7 @@
 #include "Exception.hpp"
 #include "Interrupt.hpp"
 #include "KernelInstance.hpp"
+#include "KernelPanic.hpp"
 #include "Logger.hpp"
 #include "ScopedCriticalSection.hpp"
 #include "Stats.hpp"
@@ -16,6 +17,11 @@ Kernel::Kernel()
       syscalls(nullptr),
       loader(nullptr)
 {
+    this->initInternal();
+}
+
+void Kernel::initInternal()
+{
     this->systemCtx = new SystemContext();
     this->storageCtx = new StorageContext();
     this->storageCtx->init<StubFileSystem, InMemoryDisk, FIFOPolicy>(NUM_DISK_BLOCKS, NUM_SWAP_BLOCKS, this->systemCtx->pmm.getTotalFrames());
@@ -25,8 +31,7 @@ Kernel::Kernel()
     this->vmm = new VirtualMemoryManager();
     this->loader = new Loader();
 }
-
-Kernel::~Kernel()
+void Kernel::destroyInternal()
 {
     delete this->storageCtx;
     delete this->systemCtx;
@@ -35,6 +40,12 @@ Kernel::~Kernel()
     delete this->vmm;
     delete this->syscalls;
     delete this->loader;
+    Interrupt::init(nullptr);
+}
+
+Kernel::~Kernel()
+{
+    this->destroyInternal();
 }
 
 bool Kernel::createProcess(const std::string& filename)
@@ -47,10 +58,15 @@ bool Kernel::killProcess(int pid)
     return Process::terminate(pid, -1, true);
 }
 
+void Kernel::reset()
+{
+    this->destroyInternal();
+    this->initInternal();
+}
+
 void Kernel::init()
 {
     bool hasReady = !this->systemCtx->activeThreads.empty();
-
     if (!hasReady)
     {
         LOG(KERNEL, WARNING, "No READY processes.");
@@ -58,13 +74,16 @@ void Kernel::init()
     }
 
     this->systemCtx->cpu.enableVM(true);
-    Interrupt::init(this->scheduler);
 
+    Interrupt::enable();
+    Interrupt::init(this->scheduler);
     Interrupt::disable();
 
     this->timerCtx->hardware.start(TIMER_INTERRUPT_FREQUENCY);
-    LOG(KERNEL, INFO, "Simulation started...");
+    LOG(KERNEL, INFO, "rv32umos Booting...");
     this->scheduler->preempt();
+
+    this->timerCtx->hardware.stop();
 }
 
 void Kernel::runThread()
@@ -74,9 +93,15 @@ void Kernel::runThread()
     while (true)
     {
         // atomic check
-        bool status = Interrupt::disable();
-        if (kernel.systemCtx->cpu.isHalted()) break;
-        Interrupt::restore(status);
+        bool prev = Interrupt::disable();
+
+        Thread* self = kernel.systemCtx->getCurrentThread();
+        if (self->getState() == ThreadState::TERMINATED)
+        {
+            Interrupt::restore(prev);
+            kernel.scheduler->preempt();
+            return;
+        }
 
         bool threadDead = false;
 
@@ -96,11 +121,7 @@ void Kernel::runThread()
                 bool killed = kernel.killProcess(kernel.systemCtx->getCurrentThread()->getProcess()->getPid());
                 if (!killed)
                 {
-                    LOG(KERNEL, ERROR, "KERNEL PANIC: Failed to kill process after Syscall Error!");
-                    kernel.systemCtx->cpu.halt();
-                    // jump to main
-                    void* dummy_sp = nullptr;
-                    context_switch(&dummy_sp, kernel.systemCtx->mainStackPointer);
+                    PANIC("Failed to kill process after Syscall Error!");
                     return;
                 }
                 threadDead = true;
@@ -118,10 +139,7 @@ void Kernel::runThread()
                 bool killed = kernel.killProcess(kernel.systemCtx->getCurrentThread()->getProcess()->getPid());
                 if (!killed)
                 {
-                    LOG(KERNEL, ERROR, "KERNEL PANIC: Failed to kill process after Segfault!");
-                    kernel.systemCtx->cpu.halt();
-                    void* dummy_sp = nullptr;
-                    context_switch(&dummy_sp, kernel.systemCtx->mainStackPointer);
+                    PANIC("KERNEL PANIC: Failed to kill process after Segfault!");
                     return;
                 }
                 threadDead = true;
@@ -137,10 +155,7 @@ void Kernel::runThread()
             bool killed = kernel.killProcess(kernel.systemCtx->getCurrentThread()->getProcess()->getPid());
             if (!killed)
             {
-                LOG(KERNEL, ERROR, "KERNEL PANIC: Failed to kill process after Exception!");
-                kernel.systemCtx->cpu.halt();
-                void* dummy_sp = nullptr;
-                context_switch(&dummy_sp, kernel.systemCtx->mainStackPointer);
+                PANIC("Failed to kill process after Exception!");
                 return;
             }
             threadDead = true;
@@ -154,29 +169,5 @@ void Kernel::runThread()
         }
     }
 
-    // kernel panic
-    Interrupt::disable();
-    Thread* current = kernel.systemCtx->getCurrentThread();
-    if (current != nullptr)
-    {
-        bool killed = kernel.killProcess(current->getProcess()->getPid());
-        if (!killed)
-        {
-            LOG(KERNEL, ERROR, "KERNEL PANIC: CPU Halted and process kill failed.");
-            void* dummy_sp = nullptr;
-            context_switch(&dummy_sp, kernel.systemCtx->mainStackPointer);
-            return;
-        }
-        kernel.scheduler->preempt();
-        return;
-    }
-
-    LOG(KERNEL, ERROR, "KERNEL PANIC: CPU Halted with no active thread.");
-    void* dummy_sp = nullptr;
-    context_switch(&dummy_sp, kernel.systemCtx->mainStackPointer);
-}
-
-bool Kernel::isRunning()
-{
-    return !this->systemCtx->cpu.isHalted();
+    PANIC("Unexpected error");
 }

@@ -45,7 +45,6 @@ void Scheduler::preempt()
         if (allDead)
         {
             LOG(SCHEDULER, INFO, "All threads terminated.");
-            kernel.systemCtx->cpu.halt();
             void* dummy_sp = nullptr;
             context_switch(&dummy_sp, kernel.systemCtx->mainStackPointer);
             return;
@@ -126,7 +125,6 @@ void Scheduler::contextSwitch(std::size_t nextIndex)
 bool Scheduler::checkCurrentThreadRunnable()
 {
     Thread* current = kernel.systemCtx->getCurrentThread();
-    if (current == nullptr) return false;
     if (current->getState() == ThreadState::RUNNING) return true;
     return false;
 }
@@ -143,8 +141,6 @@ bool Scheduler::checkAllTerminated()
 void Scheduler::sleepCurrentThread(int delayMs, const std::string& reason)
 {
     Thread* current = kernel.systemCtx->getCurrentThread();
-    if (current == nullptr) return;
-
     if (current->getState() == ThreadState::BLOCKED)
     {
         // the thread is already blocked Natively extend its underlying timer.

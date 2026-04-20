@@ -2,6 +2,7 @@
 #include "DiskInterface.hpp"
 #include "HardwareTimer.hpp"
 #include "InMemoryDisk.hpp"
+#include "KernelPanic.hpp"
 #include "Machine.hpp"
 #include "PageReplacementPolicy.hpp"
 #include "PhysicalMemoryManager.hpp"
@@ -55,9 +56,8 @@ public:
 
     inline Thread* getCurrentThread()
     {
-        if (currentThreadIndex == -1) return nullptr;
-        if (static_cast<std::size_t>(currentThreadIndex) >= activeThreads.size()) return nullptr;
-
+        if (currentThreadIndex == -1) PANIC("Current thread index is -1");
+        if (static_cast<std::size_t>(currentThreadIndex) >= activeThreads.size()) PANIC("Current thread index out of bound");
         return this->activeThreads[this->currentThreadIndex];
     }
 };

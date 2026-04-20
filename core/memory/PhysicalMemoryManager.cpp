@@ -1,5 +1,6 @@
 #include "PhysicalMemoryManager.hpp"
 #include "KernelInstance.hpp"
+#include "KernelPanic.hpp"
 
 void PhysicalMemoryManager::init()
 {
@@ -33,13 +34,13 @@ void PhysicalMemoryManager::freeFrame(Addr frame)
 {
     this->freeFrames.push_back(frame);
     Addr ppn = frame >> 12;
-    if (ppn >= this->frameTable.size()) throw std::runtime_error("PANIC: PPN Out of Bound!");
+    if (ppn >= this->frameTable.size()) PANIC("PPN Out of Bound!");
     this->frameTable[ppn].clear();
 }
 
 void PhysicalMemoryManager::registerFrameOwner(Addr ppn, Addr vpn, int ownerPid)
 {
-    if (ppn >= this->frameTable.size()) throw std::runtime_error("PANIC: PPN Out of Bound!");
+    if (ppn >= this->frameTable.size()) PANIC("PPN Out of Bound!");
     this->frameTable[ppn].allocated = true;
     this->frameTable[ppn].ownerPid = ownerPid;
     this->frameTable[ppn].vpn = vpn;

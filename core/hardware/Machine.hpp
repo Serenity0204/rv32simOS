@@ -38,13 +38,8 @@ public:
     inline void setPageTable(PageTable* table) { this->mmu.setPageTable(table); }
     inline void enableVM(bool enabled) { this->mmu.enableVM(enabled); }
 
-    // status
-    inline bool isHalted() { return this->halted; }
-    inline void halt() { this->halted = true; }
-
 private:
     // kernel related
-    bool halted;
     RegFile regs;
     MMU mmu;
     Addr pc;

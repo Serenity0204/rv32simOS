@@ -1,5 +1,6 @@
 #include "VirtualMemoryManager.hpp"
 #include "KernelInstance.hpp"
+#include "KernelPanic.hpp"
 #include "Logger.hpp"
 #include "Stats.hpp"
 #include "Utils.hpp"
@@ -9,12 +10,6 @@ bool VirtualMemoryManager::handlePageFault(Addr faultAddr)
 {
     STATS.incPageFaults();
     Thread* currentThread = kernel.systemCtx->getCurrentThread();
-
-    if (currentThread == nullptr)
-    {
-        kernel.systemCtx->cpu.halt();
-        return false;
-    }
 
     Process* process = currentThread->getProcess();
     Addr vpn = faultAddr >> 12;
@@ -173,6 +168,7 @@ Addr VirtualMemoryManager::allocateFrame(int pid, Addr vpn)
         LOG(MMU, WARNING, "RAM Full. Evicting...");
         this->evictPage();
         info = kernel.systemCtx->pmm.allocateFrame();
+        if (!info.status) PANIC("Out of memory after eviction!");
     }
 
     Addr ppn = info.paddr >> 12;
