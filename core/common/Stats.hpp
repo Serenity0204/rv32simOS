@@ -1,11 +1,21 @@
 #pragma once
 #include <cstdint>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <vector>
 
 class Stats
 {
+private:
+    struct ProcessStat
+    {
+        int pid;
+        std::string name;
+        std::size_t instr;
+    };
+
 public:
     static Stats& getInstance()
     {
@@ -22,43 +32,48 @@ public:
     inline void incAllocatedFrames() { this->totalAllocatedFrames++; }
     inline void incSwapIns() { this->totalSwapIns++; }
     inline void incSwapOuts() { this->totalSwapOuts++; }
-    void printSummary()
+
+    // CPU usage per process
+    inline void recordProcessStats(int pid, const std::string& name, std::size_t instr) { this->processStats.push_back({pid, name, instr}); }
+
+    inline void printSummary()
     {
         std::cout << "\n============================================\n";
         std::cout << "            MACHINE STATISTICS              \n";
         std::cout << "============================================\n";
 
-        printMetric("Total Instructions", totalInstructions);
-        printMetric("Total Syscalls", totalSyscalls);
-        printMetric("Total Page Faults", totalPageFaults);
-        printMetric("Total Page Swap Ins", totalSwapIns);
-        printMetric("Total Page Swap Outs", totalSwapOuts);
-        printMetric("Context Switches", totalContextSwitches);
-        printMetric("Disk Reads (4KB)", totalDiskReads);
-        printMetric("Disk Writes (4KB)", totalDiskWrites);
-        printMetric("Physical Frames Used", totalAllocatedFrames);
+        printMetric("Total Instructions", this->totalInstructions);
+        printMetric("Total Syscalls", this->totalSyscalls);
+        printMetric("Total Page Faults", this->totalPageFaults);
+        printMetric("Total Page Swap Ins", this->totalSwapIns);
+        printMetric("Total Page Swap Outs", this->totalSwapOuts);
+        printMetric("Context Switches", this->totalContextSwitches);
+        printMetric("Disk Reads (4KB)", this->totalDiskReads);
+        printMetric("Disk Writes (4KB)", this->totalDiskWrites);
+        printMetric("Physical Frames Used", this->totalAllocatedFrames);
 
         std::cout << "--------------------------------------------\n";
 
-        double pagingRate = (totalInstructions > 0) ? (double)totalPageFaults / totalInstructions * 100.0 : 0.0;
+        double pagingRate = (this->totalInstructions > 0) ? (double)this->totalPageFaults / this->totalInstructions * 100.0 : 0.0;
 
         std::cout << " Paging Rate: " << std::fixed << std::setprecision(4)
                   << pagingRate << "% (Faults/Instr)\n";
 
         std::cout << "============================================\n";
+        this->generateProcessData();
     }
 
-    void reset()
+    inline void reset()
     {
-        totalInstructions = 0;
-        totalContextSwitches = 0;
-        totalPageFaults = 0;
-        totalSyscalls = 0;
-        totalDiskReads = 0;
-        totalDiskWrites = 0;
-        totalAllocatedFrames = 0;
-        totalSwapIns = 0;
-        totalSwapOuts = 0;
+        this->totalInstructions = 0;
+        this->totalContextSwitches = 0;
+        this->totalPageFaults = 0;
+        this->totalSyscalls = 0;
+        this->totalDiskReads = 0;
+        this->totalDiskWrites = 0;
+        this->totalAllocatedFrames = 0;
+        this->totalSwapIns = 0;
+        this->totalSwapOuts = 0;
     }
 
 private:
@@ -74,11 +89,29 @@ private:
     uint64_t totalSwapIns = 0;
     uint64_t totalSwapOuts = 0;
 
-    void printMetric(const std::string& label, uint64_t value)
+    inline void printMetric(const std::string& label, uint64_t value)
     {
         std::cout << std::left << std::setw(25) << label
                   << ": " << std::right << std::setw(10) << value << "\n";
     }
+
+    inline void generateProcessData()
+    {
+        std::ofstream outFile("process_stats.txt");
+
+        for (ProcessStat& p : this->processStats)
+        {
+            int pid = p.pid;
+            std::string name = p.name;
+            std::size_t instr = p.instr;
+
+            double percent = (this->totalInstructions > 0) ? ((double)instr / this->totalInstructions) * 100.0 : 0.0;
+
+            outFile << pid << " " << name << " " << std::fixed << std::setprecision(2) << percent << "\n";
+        }
+        outFile.close();
+    }
+    std::vector<Stats::ProcessStat> processStats;
 };
 
 #define STATS Stats::getInstance()

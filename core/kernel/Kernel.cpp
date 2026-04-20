@@ -96,6 +96,7 @@ void Kernel::runThread()
         bool prev = Interrupt::disable();
 
         Thread* self = kernel.systemCtx->getCurrentThread();
+        self->getProcess()->incrementInstruction();
         if (self->getState() == ThreadState::TERMINATED)
         {
             Interrupt::restore(prev);

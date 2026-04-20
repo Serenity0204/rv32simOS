@@ -128,6 +128,7 @@ void Process::recycle(std::string newName)
 {
     // give back physical mem
     this->wipeMemory();
+    this->pcb->instructionsExecuted = 0;
 
     // reset page table
     this->pcb->pageTable->clear();
@@ -192,6 +193,9 @@ bool Process::terminate(int pid, int exitCode, bool crashed)
             waiter->setState(ThreadState::READY);
         kernel.systemCtx->processWaiters.erase(pid);
     }
+
+    // record the stats
+    STATS.recordProcessStats(pid, process->getName(), process->getTotalInstructions());
 
     // return slot to pool
     process->setActive(false);

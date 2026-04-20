@@ -30,8 +30,12 @@ private:
         Addr programBreak;
         Addr nextStackBase;
 
+        // for stats
+        std::size_t instructionsExecuted;
+
         PCB(int id, std::string n) : pid(id), name(n)
         {
+            this->instructionsExecuted = 0;
             this->pageTable = new PageTable();
             this->nextStackBase = STACK_TOP;
             this->programBreak = HEAP_START;
@@ -87,6 +91,11 @@ public:
 
     inline void setActive(bool val) { this->pcb->active = val; }
     inline bool isActive() const { return this->pcb->active; }
+
+public:
+    // for stats
+    inline void incrementInstruction() { this->pcb->instructionsExecuted++; }
+    inline std::size_t getTotalInstructions() const { return this->pcb->instructionsExecuted; }
 
 public:
     // mutex related
