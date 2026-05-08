@@ -13,7 +13,7 @@ void kernelfunction::initKernelSubsystem(Kernel* kernel)
     kernel->scheduler = new Scheduler();
     kernel->syscalls = new SyscallHandler();
     kernel->vmm = new VirtualMemoryManager();
-    kernel->alarm = new SoftwareTimer();
+    kernel->alarm = new Alarm();
     KernelService::registerService("procManager", kernel->procManager);
     KernelService::registerService("scheduler", kernel->scheduler);
     KernelService::registerService("syscalls", kernel->syscalls);

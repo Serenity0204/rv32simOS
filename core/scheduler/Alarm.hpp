@@ -6,38 +6,38 @@
 #include <unordered_set>
 #include <vector>
 
-using TimerCallback = std::function<void()>;
+using AlarmCallback = std::function<void()>;
 
-struct TimerEvent
+struct AlarmEvent
 {
     std::chrono::steady_clock::time_point expiration;
     uint64_t id;
 
-    bool operator>(const TimerEvent& other) const
+    bool operator>(const AlarmEvent& other) const
     {
         return this->expiration > other.expiration;
     }
 };
 
-struct TimerInfo
+struct AlarmInfo
 {
     std::chrono::steady_clock::time_point expiration;
-    TimerCallback callback;
+    AlarmCallback callback;
     bool active;
 };
 
-class SoftwareTimer
+class Alarm
 {
 private:
-    std::unordered_map<uint64_t, TimerInfo> activeTimers;
-    std::priority_queue<TimerEvent, std::vector<TimerEvent>, std::greater<TimerEvent>> queue;
+    std::unordered_map<uint64_t, AlarmInfo> activeTimers;
+    std::priority_queue<AlarmEvent, std::vector<AlarmEvent>, std::greater<AlarmEvent>> queue;
     uint64_t nextId = 0;
 
 public:
-    SoftwareTimer() = default;
-    ~SoftwareTimer() = default;
+    Alarm() = default;
+    ~Alarm() = default;
 
-    uint64_t registerTimer(int delayMs, TimerCallback cb);
+    uint64_t registerTimer(int delayMs, AlarmCallback cb);
     void cancelTimer(uint64_t id);
     bool extendTimer(uint64_t id, int extraDelayMs);
     void tick();

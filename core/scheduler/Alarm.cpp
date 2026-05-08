@@ -1,6 +1,6 @@
-#include "SoftwareTimer.hpp"
+#include "Alarm.hpp"
 
-uint64_t SoftwareTimer::registerTimer(int delayMs, TimerCallback cb)
+uint64_t Alarm::registerTimer(int delayMs, AlarmCallback cb)
 {
     ScopedCriticalSection lock;
     auto expireTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(delayMs);
@@ -10,14 +10,14 @@ uint64_t SoftwareTimer::registerTimer(int delayMs, TimerCallback cb)
     return id;
 }
 
-void SoftwareTimer::cancelTimer(uint64_t id)
+void Alarm::cancelTimer(uint64_t id)
 {
     ScopedCriticalSection lock;
     if (this->activeTimers.count(id))
         this->activeTimers[id].active = false;
 }
 
-bool SoftwareTimer::extendTimer(uint64_t id, int extraDelayMs)
+bool Alarm::extendTimer(uint64_t id, int extraDelayMs)
 {
     ScopedCriticalSection lock;
     if (this->activeTimers.count(id) && this->activeTimers[id].active)
@@ -34,7 +34,7 @@ bool SoftwareTimer::extendTimer(uint64_t id, int extraDelayMs)
     return false;
 }
 
-void SoftwareTimer::tick()
+void Alarm::tick()
 {
     ScopedCriticalSection lock;
     auto now = std::chrono::steady_clock::now();
@@ -44,17 +44,17 @@ void SoftwareTimer::tick()
         // If the top timer is in the future, ALL timers are in the future. Stop checking.
         if (this->queue.top().expiration > now) break;
 
-        TimerEvent event = this->queue.top();
+        AlarmEvent event = this->queue.top();
         this->queue.pop();
 
         if (!this->activeTimers.count(event.id)) continue;
 
-        TimerInfo& info = this->activeTimers[event.id];
+        AlarmInfo& info = this->activeTimers[event.id];
         // Only execute if it wasn't cancelled AND it matches the latest extended time
         if (info.active && info.expiration == event.expiration)
         {
             info.active = false;
-            TimerCallback cb = info.callback;
+            AlarmCallback cb = info.callback;
             this->activeTimers.erase(event.id);
 
             // Execute the callback

@@ -1,11 +1,11 @@
 #pragma once
 
+#include "Alarm.hpp"
 #include "HAL.hpp"
 #include "Loader.hpp"
 #include "PageReplacementPolicy.hpp"
 #include "ProcessManager.hpp"
 #include "Scheduler.hpp"
-#include "SoftwareTimer.hpp"
 #include "SwapManager.hpp"
 #include "SyscallHandler.hpp"
 #include "VFSInterface.hpp"
@@ -18,7 +18,7 @@ struct Kernel
     ProcessManager* procManager = nullptr;
     SyscallHandler* syscalls = nullptr;
     VirtualMemoryManager* vmm = nullptr;
-    SoftwareTimer* alarm = nullptr;
+    Alarm* alarm = nullptr;
     SwapManager* swap = nullptr;
 
     // filesystem related
