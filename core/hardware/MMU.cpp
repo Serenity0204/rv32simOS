@@ -8,6 +8,11 @@ MMU::MMU()
     this->reset();
 }
 
+void MMU::setMemory(Memory* memory)
+{
+    this->memory = memory;
+}
+
 void MMU::reset()
 {
     this->vmEnabled = false;
@@ -27,30 +32,30 @@ void MMU::enableVM(bool enabled)
 Word MMU::loadVirtualMemory(Addr vaddr, std::size_t size)
 {
     Addr paddr = this->translate(vaddr, false, false);
-    return this->bus.load(paddr, size);
+    return this->memory->load(paddr, size);
 }
 
 void MMU::storeVirtualMemory(Addr vaddr, std::size_t size, Word value)
 {
     Addr paddr = this->translate(vaddr, true, false);
-    this->bus.store(paddr, size, value);
+    this->memory->store(paddr, size, value);
 }
 
 Word MMU::loadPhysicalMemory(Addr paddr, std::size_t size)
 {
-    return this->bus.load(paddr, size);
+    return this->memory->load(paddr, size);
 }
 
 void MMU::storePhysicalMemory(Addr paddr, std::size_t size, Word value)
 {
-    this->bus.store(paddr, size, value);
+    this->memory->store(paddr, size, value);
 }
 
 Word MMU::fetch(Addr vaddr)
 {
     // Fetch is always 4 bytes
     Addr paddr = this->translate(vaddr, false, true);
-    return this->bus.load(paddr, 4);
+    return this->memory->load(paddr, 4);
 }
 
 Addr MMU::translate(Addr vaddr, bool isWrite, bool isExec)

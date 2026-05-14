@@ -1,6 +1,6 @@
 #pragma once
-#include "Bus.hpp"
 #include "Common.hpp"
+#include "Memory.hpp"
 #include "PTE.hpp"
 
 class MMU
@@ -24,9 +24,10 @@ public:
     void setPageTable(PageTable* table);
     void enableVM(bool enabled);
     void reset();
+    void setMemory(Memory* memory);
 
 private:
-    Bus bus;
+    Memory* memory = nullptr;
     PageTable* currentTable;
     bool vmEnabled;
 

@@ -2,8 +2,9 @@
 #include "KernelPanic.hpp"
 #include "TimeModeling.hpp"
 
-void PhysicalMemoryManager::init()
+void PhysicalMemoryManager::init(Memory* memory)
 {
+    this->memory = memory;
     for (Addr frame = MEMORY_BASE; frame < MEMORY_BASE + MEMORY_SIZE; frame += KERNEL_PAGE_SIZE)
         this->freeFrames.push_back(frame);
 
@@ -44,4 +45,14 @@ void PhysicalMemoryManager::registerFrameOwner(Addr ppn, Addr vpn, int ownerPid)
     this->frameTable[ppn].allocated = true;
     this->frameTable[ppn].ownerPid = ownerPid;
     this->frameTable[ppn].vpn = vpn;
+}
+
+Word PhysicalMemoryManager::load(Addr paddr, std::size_t size)
+{
+    return this->memory->load(paddr, size);
+}
+
+void PhysicalMemoryManager::store(Addr paddr, std::size_t size, Word value)
+{
+    this->memory->store(paddr, size, value);
 }

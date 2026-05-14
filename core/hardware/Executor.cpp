@@ -1,5 +1,4 @@
 #include "Executor.hpp"
-#include "Bus.hpp"
 #include "Machine.hpp"
 #include "Decoder.hpp"
 #include "Exception.hpp"

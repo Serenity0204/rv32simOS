@@ -49,9 +49,10 @@ bool VirtualMemoryManager::handleSwapIn(Process* proc, Addr vpn)
         std::vector<Byte> buffer(KERNEL_PAGE_SIZE);
         int slot = static_cast<int>(pte.ppn);
         K_SWAP->swapIn(buffer, slot);
+
         // store the swap data back to physical memory
         for (Addr i = 0; i < KERNEL_PAGE_SIZE; ++i)
-            K_HAL->cpu.storePhysicalMemory(newPAddr + i, 1, buffer[i]);
+            K_PMM->store(newPAddr + i, 1, buffer[i]);
 
         STATS.incSwapIns();
 
@@ -101,7 +102,8 @@ bool VirtualMemoryManager::handleHeapGrowth(Process* proc, Addr faultAddr, Addr 
 
         // fill the new heap frame with pure zeros to prevent security leaks
         for (Addr i = 0; i < KERNEL_PAGE_SIZE; i++)
-            K_HAL->cpu.storePhysicalMemory(paddr + i, 1, 0);
+            K_PMM->store(paddr + i, 1, 0);
+
         PTE& pte = (*proc->getPageTable())[vpn];
         pte.ppn = paddr >> 12;
         pte.valid = true;
@@ -139,9 +141,9 @@ bool VirtualMemoryManager::handleLazyLoading(Process* proc, Addr faultAddr, Addr
                 STATS.incDiskReads();
             }
 
-            // Write directly to Physical RAM using CPU's debug interface
+            // Write directly to Physical RAM
             for (size_t i = 0; i < KERNEL_PAGE_SIZE; i++)
-                K_HAL->cpu.storePhysicalMemory(paddr + i, 1, static_cast<Word>(buffer[i]));
+                K_PMM->store(paddr + i, 1, static_cast<Word>(buffer[i]));
 
             // Update PTE Struct
             PTE& pte = (*proc->getPageTable())[vpn];
@@ -160,19 +162,19 @@ bool VirtualMemoryManager::handleLazyLoading(Process* proc, Addr faultAddr, Addr
 
 Addr VirtualMemoryManager::allocateFrame(int pid, Addr vpn)
 {
-    FrameAllocInfo info = K_HAL->pmm.allocateFrame();
+    FrameAllocInfo info = K_PMM->allocateFrame();
 
     // full, must evict and try again
     if (!info.status)
     {
         LOG(MMU, WARNING, "RAM Full. Evicting...");
         this->evictPage();
-        info = K_HAL->pmm.allocateFrame();
+        info = K_PMM->allocateFrame();
         if (!info.status) PANIC("Out of memory after eviction!");
     }
 
     Addr ppn = info.paddr >> 12;
-    K_HAL->pmm.registerFrameOwner(ppn, vpn, pid);
+    K_PMM->registerFrameOwner(ppn, vpn, pid);
     K_PRP->onAllocate(ppn);
     STATS.incAllocatedFrames();
     return info.paddr;
@@ -180,13 +182,13 @@ Addr VirtualMemoryManager::allocateFrame(int pid, Addr vpn)
 
 void VirtualMemoryManager::evictPage()
 {
-    int found = K_PRP->findVictim(K_HAL->pmm.getFrameTable(), K_PROC_MANAGER->processList);
+    int found = K_PRP->findVictim(K_PMM->getFrameTable(), K_PROC_MANAGER->processList);
 
     // cannot find victim frame, something wrong
     if (found == -1) PANIC("OOM and no victim frame found!");
 
     Addr victimPPN = static_cast<Addr>(found);
-    const FrameInfo& info = K_HAL->pmm.getFrameTable()[victimPPN];
+    const FrameInfo& info = K_PMM->getFrameTable()[victimPPN];
     Process* process = K_PROC_MANAGER->processList[info.ownerPid];
     PTE& pte = (*process->getPageTable())[info.vpn];
     Addr paddr = victimPPN * KERNEL_PAGE_SIZE;
@@ -198,7 +200,7 @@ void VirtualMemoryManager::evictPage()
         pte.valid = false;
         pte.swapped = false;
         pte.ppn = 0;
-        K_HAL->pmm.freeFrame(paddr);
+        K_PMM->freeFrame(paddr);
         K_PRP->onFree(victimPPN);
         return;
     }
@@ -209,7 +211,7 @@ void VirtualMemoryManager::evictPage()
 
     // load the memory to buffer, and store it in swap
     for (size_t i = 0; i < KERNEL_PAGE_SIZE; ++i)
-        buffer[i] = static_cast<Byte>(K_HAL->cpu.loadPhysicalMemory(paddr + i, 1));
+        buffer[i] = static_cast<Byte>(K_PMM->load(paddr + i, 1));
 
     int slot = K_SWAP->swapOut(buffer);
     STATS.incSwapOuts();
@@ -219,6 +221,6 @@ void VirtualMemoryManager::evictPage()
     pte.swapped = true;
     pte.ppn = slot;
     pte.dirty = false;
-    K_HAL->pmm.freeFrame(paddr);
+    K_PMM->freeFrame(paddr);
     K_PRP->onFree(victimPPN);
 }

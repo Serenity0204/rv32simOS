@@ -2,19 +2,20 @@
 #include "DiskInterface.hpp"
 #include "HardwareTimer.hpp"
 #include "Machine.hpp"
-#include "PhysicalMemoryManager.hpp"
+#include "Memory.hpp"
 #include "SystemConfig.hpp"
 
 struct HAL
 {
 public:
+    Memory physicalRAM;
     Machine cpu;
-    PhysicalMemoryManager pmm;
     HardwareTimer timer;
     DiskInterface* disk = nullptr;
+
     HAL()
     {
-        this->pmm.init();
+        this->cpu.setMemory(&this->physicalRAM);
         this->disk = new DiskImpl(NUM_DISK_BLOCKS);
     }
 

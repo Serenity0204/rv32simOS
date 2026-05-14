@@ -12,6 +12,7 @@
 #define K_VMM KernelService::get<VirtualMemoryManager>("vmm")
 #define K_ALARM KernelService::get<Alarm>("alarm")
 #define K_SWAP KernelService::get<SwapManager>("swap")
+#define K_PMM KernelService::get<PhysicalMemoryManager>("pmm")
 
 // filesystem related
 #define K_PRP KernelService::get<PageReplacementPolicy>("prp")

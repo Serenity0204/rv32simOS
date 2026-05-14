@@ -4,7 +4,6 @@
 #include "MMU.hpp"
 #include "RegFile.hpp"
 
-class Bus;
 class Executor;
 
 class Machine
@@ -37,6 +36,7 @@ public:
     // VM Control
     inline void setPageTable(PageTable* table) { this->mmu.setPageTable(table); }
     inline void enableVM(bool enabled) { this->mmu.enableVM(enabled); }
+    inline void setMemory(Memory* memPtr) { this->mmu.setMemory(memPtr); }
 
 private:
     // kernel related

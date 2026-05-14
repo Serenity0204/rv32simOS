@@ -1,8 +1,7 @@
-#include "Bus.hpp"
+#include "Machine.hpp"
 #include "Decoder.hpp"
 #include "Exception.hpp"
 #include "Executor.hpp"
-#include "Machine.hpp"
 #include "Utils.hpp"
 
 Machine::Machine()
